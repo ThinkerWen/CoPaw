@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import os
 import sys
 import threading
 from typing import TYPE_CHECKING
@@ -86,6 +87,42 @@ def clear_builtin_channel_cache() -> None:
         _BUILTIN_CHANNEL_CACHE = None
 
 
+def _merge_custom_keys_into_enabled_env(custom_keys: list[str]) -> None:
+    """Ensure discovered custom channels are included in
+    COPAW_ENABLED_CHANNELS.
+
+    This keeps container defaults (often built-ins only) from blocking
+    custom channels discovered at runtime.
+    """
+    if not custom_keys:
+        return
+
+    raw = os.environ.get("COPAW_ENABLED_CHANNELS", "").strip()
+    if not raw:
+        return
+
+    enabled = [x.strip() for x in raw.split(",") if x.strip()]
+    changed = False
+    for key in custom_keys:
+        if key not in enabled:
+            enabled.append(key)
+            changed = True
+    if not changed:
+        return
+
+    merged = ",".join(enabled)
+    os.environ["COPAW_ENABLED_CHANNELS"] = merged
+    try:
+        from ...envs import set_env_var
+
+        set_env_var("COPAW_ENABLED_CHANNELS", merged)
+    except Exception:
+        logger.debug(
+            "failed to persist COPAW_ENABLED_CHANNELS after custom scan",
+            exc_info=True,
+        )
+
+
 def _discover_custom_channels() -> dict[str, type[BaseChannel]]:
     """Load channel classes from CUSTOM_CHANNELS_DIR."""
     out: dict[str, type[BaseChannel]] = {}
@@ -118,6 +155,7 @@ def _discover_custom_channels() -> dict[str, type[BaseChannel]]:
                 if key:
                     out[key] = obj
                     logger.debug("custom channel registered: %s", key)
+    _merge_custom_keys_into_enabled_env(list(out.keys()))
     return out
 
 

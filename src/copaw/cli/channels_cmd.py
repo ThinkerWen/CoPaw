@@ -29,6 +29,7 @@ from ..app.channels.registry import (
     BUILTIN_CHANNEL_KEYS,
     get_channel_registry,
 )
+from ..envs import load_envs, set_env_var
 
 # Fields that contain secrets — display masked in ``list``
 _SECRET_FIELDS = {
@@ -815,6 +816,35 @@ def _channel_enabled(ch) -> bool:
     return False
 
 
+def _split_enabled_channels(raw: str) -> list[str]:
+    return [x.strip() for x in (raw or "").split(",") if x.strip()]
+
+
+def _ensure_enabled_channel_env(channel_key: str) -> None:
+    """Ensure COPAW_ENABLED_CHANNELS contains channel_key.
+
+    This keeps behavior intuitive in container images that pre-set
+    COPAW_ENABLED_CHANNELS and would otherwise filter out newly added
+    custom channels.
+    """
+    envs = load_envs()
+    raw = envs.get("COPAW_ENABLED_CHANNELS") or ""
+    if not raw:
+        import os
+
+        raw = os.environ.get("COPAW_ENABLED_CHANNELS", "")
+
+    items = _split_enabled_channels(raw)
+    if channel_key in items:
+        return
+    items.append(channel_key)
+    value = ",".join(items)
+    set_env_var("COPAW_ENABLED_CHANNELS", value)
+    click.echo(
+        f"✓ Updated COPAW_ENABLED_CHANNELS: {value}",
+    )
+
+
 @channels_group.command("list")
 def list_cmd() -> None:
     """Show current channel configuration."""
@@ -998,6 +1028,8 @@ def add_cmd(
                 setattr(existing.channels, key, updated)
         save_config(existing, config_path)
         click.echo(f"✓ Added '{key}' to config at {config_path}")
+
+    _ensure_enabled_channel_env(key)
 
 
 @channels_group.command("remove")

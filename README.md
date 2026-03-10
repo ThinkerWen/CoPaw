@@ -271,7 +271,7 @@ Images are on **Docker Hub** (`agentscope/copaw`). Image tags: `latest` (stable)
 
 ```bash
 docker pull agentscope/copaw:latest
-docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working agentscope/copaw:latest
+docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-model:/app/working.secret agentscope/copaw:latest
 ```
 
 Also available on Alibaba Cloud Container Registry (ACR) for users in China: `agentscope-registry.ap-southeast-1.cr.aliyuncs.com/agentscope/copaw` (same tags).
@@ -286,13 +286,13 @@ Then open **http://127.0.0.1:8088/** for the Console. Config, memory, and skills
 > ```bash
 > docker run -p 127.0.0.1:8088:8088 \
 >   --add-host=host.docker.internal:host-gateway \
->   -v copaw-data:/app/working agentscope/copaw:latest
+>   -v copaw-data:/app/working -v copaw-model:/app/working.secret agentscope/copaw:latest
 > ```
 > Then in CoPaw **Settings → Models → Ollama**, change the Base URL to `http://host.docker.internal:11434/v1` or your corresponding port.
 >
 > **Option B** — Host networking (Linux only):
 > ```bash
-> docker run --network=host -v copaw-data:/app/working agentscope/copaw:latest
+> docker run --network=host -v copaw-data:/app/working -v copaw-model:/app/working.secret agentscope/copaw:latest
 > ```
 > No port mapping (`-p`) is needed; the container shares the host network directly. Note that all container ports are exposed on the host, which may cause conflicts if the port is already in use.
 

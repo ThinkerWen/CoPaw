@@ -89,7 +89,7 @@ pip install -e .
 
 \`\`\`
 docker pull agentscope/copaw:latest
-docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working agentscope/copaw:latest
+docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-model:/app/working.secret agentscope/copaw:latest
 \`\`\`
 
 升级后重启服务 copaw app。`,
@@ -118,7 +118,7 @@ pip install -e .
 
 \`\`\`
 docker pull agentscope/copaw:latest
-docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working agentscope/copaw:latest
+docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-model:/app/working.secret agentscope/copaw:latest
 \`\`\`
 
 После обновления перезапустите сервис с помощью \`copaw app\`.`,
@@ -147,7 +147,7 @@ pip install -e .
 
 \`\`\`
 docker pull agentscope/copaw:latest
-docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working agentscope/copaw:latest
+docker run -p 127.0.0.1:8088:8088 -v copaw-data:/app/working -v copaw-model:/app/working.secret agentscope/copaw:latest
 \`\`\`
 
 After upgrading, restart the service with \`copaw app\`.`,
